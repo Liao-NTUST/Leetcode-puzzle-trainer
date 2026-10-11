@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LeetCode 積木訓練器</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🧩 <span>LeetCode 積木訓練器</span></div>
+    <div class="nav">
+      <button id="btnPrev" class="icon-btn" title="上一題">‹</button>
+      <button id="btnList" class="list-btn" title="題目列表"><span id="navTitle">題目列表</span> ▾</button>
+      <button id="btnNext" class="icon-btn" title="下一題">›</button>
+    </div>
+    <div class="top-right">
+      <span id="progress" class="progress"></span>
+      <button id="btnHelp" class="icon-btn" title="怎麼玩">?</button>
+      <button id="btnTheme" class="icon-btn" title="切換深淺色">◐</button>
+    </div>
+  </header>
+
+  <main class="split" id="split">
+    <section class="pane left" id="leftPane">
+      <div id="problem"></div>
+    </section>
+    <div class="gutter gutter-v" id="gutterV" title="拖曳調整寬度"></div>
+    <section class="pane right" id="rightPane">
+      <div class="toolbar">
+        <button id="btnRun" class="primary">▶ 執行測試 <kbd>Ctrl+Enter</kbd></button>
+        <button id="btnReset" class="ghost">⟲ 重置積木</button>
+        <button id="btnSolution" class="ghost">🧩 看解答拼法</button>
+        <span id="runStatus" class="run-status"></span>
+      </div>
+      <div id="solBanner" class="sol-banner" hidden>👀 正在看參考解答的拼法，這裡的修改不會儲存。看懂之後按「↩ 回到我的積木」，自己再拼一次！</div>
+      <div id="blockly" class="blockly"></div>
+      <div class="gutter gutter-h" id="gutterH" title="拖曳調整高度"></div>
+      <div class="bottom" id="bottom">
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="results">測試結果</button>
+          <button class="tab" data-tab="output">印出</button>
+          <button class="tab" data-tab="code">對應程式碼</button>
+          <span class="tab-spacer"></span>
+          <div class="seg" id="langSeg" hidden>
+            <button data-lang="cpp" class="active">C++</button>
+            <button data-lang="java">Java</button>
+            <button data-lang="python">Python</button>
+          </div>
+        </div>
+        <div class="tab-body" id="tab-results"><p class="muted">把積木組好後按「執行測試」。</p></div>
+        <div class="tab-body" id="tab-output" hidden><p class="muted">用「⭐ 回傳 / 印出」裡的「印出」積木追蹤變數，結果會顯示在這裡。</p></div>
+        <div class="tab-body" id="tab-code" hidden>
+          <pre id="codeView" class="code"></pre>
+          <p class="muted code-note">由積木自動翻譯成 LeetCode 的寫法；C++ / Java 的型別是從積木的用法推論出來的。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 題目列表 -->
+  <div class="overlay" id="drawerOverlay" hidden></div>
+  <aside class="drawer" id="drawer" hidden aria-label="題目列表">
+    <div class="drawer-head">
+      <h2>題目列表</h2>
+      <button class="icon-btn" id="btnCloseDrawer" title="關閉">✕</button>
+    </div>
+    <div class="filters">
+      <div class="seg" id="listSeg">
+        <button data-list="all" class="active">全部</button>
+        <button data-list="B75">Blind 75</button>
+        <button data-list="T150">Top 150</button>
+      </div>
+      <div class="filter-row">
+        <select id="patternSel"></select>
+        <input id="searchBox" type="search" placeholder="搜尋題名 / 題號" />
+      </div>
+    </div>
+    <div id="problemList" class="problem-list"></div>
+  </aside>
+
+  <!-- 說明 -->
+  <div class="overlay" id="helpOverlay" hidden></div>
+  <div class="modal" id="help" hidden role="dialog" aria-label="怎麼玩">
+    <h2>怎麼玩 🧩</h2>
+    <ol>
+      <li><b>先讀題，再回答「觀念快問」</b>：這題該用什麼技巧？複雜度多少？這是訓練「看到題目就想到解法」的關鍵。</li>
+      <li><b>從左邊的積木分類拖積木</b>到「解題函式」裡面組出演算法。參數（例如 <code>nums</code>）已經在「📦 變數」裡。</li>
+      <li>索引都是<b>從 0 開始</b>；「從 a 走到 b」的迴圈<b>不含 b</b>，跟寫程式時一樣。</li>
+      <li>需要遞迴（樹、DFS）時，到「⚙️ 函式」建立函式。函式裡「設定」過的變數是<b>區域變數</b>，跟 Python 規則一樣。</li>
+      <li>按 <b>▶ 執行測試</b>（或 Ctrl+Enter）跑所有測資。卡住了就用「印出」追蹤變數，或打開提示。</li>
+      <li>「對應程式碼」分頁會把你的積木翻成 Python / JavaScript，順便熟悉真正寫出來長什麼樣。</li>
+    </ol>
+    <p class="muted">小技巧：在積木上按右鍵可以複製、加註解；Delete 鍵刪除；Ctrl+Z 復原。進度與積木會自動存在這台電腦的瀏覽器裡。</p>
+    <div class="modal-actions"><button class="primary" id="btnCloseHelp">開始練習</button></div>
+  </div>
+
+  <script src="vendor/blockly/blockly_compressed.js"></script>
+  <script src="vendor/blockly/blocks_compressed.js"></script>
+  <script src="vendor/blockly/javascript_compressed.js"></script>
+  <script src="vendor/blockly/python_compressed.js"></script>
+  <script src="vendor/blockly/msg/zh-hant.js"></script>
+  <script src="js/blocks.js"></script>
+  <script src="js/problems.js"></script>
+  <script src="js/runner.js"></script>
+  <script src="js/solutions.js"></script>
+  <script src="js/more/a_arrays.js"></script>
+  <script src="js/more/b_hash_matrix.js"></script>
+  <script src="js/more/c_linked_lists.js"></script>
+  <script src="js/more/d_trees.js"></script>
+  <script src="js/more/e_graph_backtrack.js"></script>
+  <script src="js/more/f_search_heap_bits.js"></script>
+  <script src="js/more/g_dp.js"></script>
+  <script src="js/typed.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
